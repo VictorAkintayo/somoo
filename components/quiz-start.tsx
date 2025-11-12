@@ -245,7 +245,7 @@ export default function QuizStart({ onStart }: QuizStartProps) {
               <button
                 key={level.value}
                 onClick={() => setSelectedDifficulty(level.value)}
-                className={`p-2.5 md:p-4 rounded-lg border-2 font-semibold text-xs md:text-base transition-all duration-300 hover:scale-[1.02] ${
+                className={`p-2.5 md:p-4 rounded-lg border-2 font-semibold text-[10px] sm:text-xs md:text-base transition-all duration-300 hover:scale-[1.02] ${
                   selectedDifficulty === level.value ? "border-primary shadow-md scale-105" : level.color
                 }`}
               >
