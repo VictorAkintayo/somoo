@@ -1,4 +1,4 @@
-##🧠 Quizify – Interactive Quiz App
+##🧠 SoMoo – An Interactive Quiz App
 
 A sleek and interactive quiz web app built with React and TypeScript, designed to deliver engaging question-based experiences with real-time scoring, progress tracking, and feedback animations.
 
