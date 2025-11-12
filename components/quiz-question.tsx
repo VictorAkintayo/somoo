@@ -253,7 +253,7 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
                   variant={isSelected && !showFeedback ? "default" : "outline"}
                   size="lg"
                   className={cn(
-                    "w-full justify-start text-left h-auto py-4 px-6 text-base transition-all duration-300 hover:scale-[1.02] animate-in slide-in-from-right-2",
+                    "w-full justify-start text-left h-auto py-4 px-6 text-base transition-all duration-300 hover:scale-[1.02] animate-in slide-in-from-right-2 whitespace-normal break-words",
                     showAsCorrect && "bg-green-500/10 border-green-500 hover:bg-green-500/20",
                     showAsIncorrect && "bg-destructive/10 border-destructive hover:bg-destructive/20",
                     isAnswered && !isSelected && !isCorrectAnswer && "opacity-50",
@@ -262,9 +262,13 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
                   onClick={() => handleAnswerSelect(index)}
                   disabled={isAnswered}
                 >
-                  <span className="flex-1">{option}</span>
-                  {showAsCorrect && <CheckCircle2 className="w-5 h-5 text-green-500 animate-in zoom-in duration-300" />}
-                  {showAsIncorrect && <XCircle className="w-5 h-5 text-destructive animate-in zoom-in duration-300" />}
+                  <span className="flex-1 break-words">{option}</span>
+                  {showAsCorrect && (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 animate-in zoom-in duration-300 flex-shrink-0 ml-2" />
+                  )}
+                  {showAsIncorrect && (
+                    <XCircle className="w-5 h-5 text-destructive animate-in zoom-in duration-300 flex-shrink-0 ml-2" />
+                  )}
                 </Button>
               )
             })}
