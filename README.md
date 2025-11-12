@@ -1,30 +1,66 @@
-# Quizify interactive quiz
+##🧠 Quizify – Interactive Quiz App
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+A sleek and interactive quiz web app built with React and TypeScript, designed to deliver engaging question-based experiences with real-time scoring, progress tracking, and feedback animations.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/elixirmetrics-gmailcoms-projects/v0-vi-yh-ama7e-uv)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/rGjwYTnEiok)
+(Add a screenshot or screen recording of your quiz interface here)
 
-## Overview
+##🚀 Features
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+🧩 Dynamic quiz engine with multiple question types (single choice, multiple choice, true/false)
+🕒 Countdown timer per question
+📊 Score tracking and instant feedback
+🔄 Restart quiz and review answers
+💾 LocalStorage persistence for high scores
+🌗 Light/Dark mode toggle
+📱 Fully responsive layout for desktop and mobile
+🛠️ Tech Stack
 
-## Deployment
+Frontend: React 18, TypeScript, TailwindCSS
+State Management: Zustand or Context API
+Animations: Framer Motion
+Data: Local JSON
 
-Your project is live at:
+##⚙️ Getting Started
+🧩 Clone the repository
+git clone https://github.com/VictorAkintayo/somoo.git
+cd somoo
 
-**[https://vercel.com/elixirmetrics-gmailcoms-projects/v0-vi-yh-ama7e-uv](https://vercel.com/elixirmetrics-gmailcoms-projects/v0-vi-yh-ama7e-uv)**
+🧱 Install dependencies
+npm install
 
-## Build your app
+🧠 Run the development server
+npm run dev
 
-Continue building your app on:
+Your app will be running at http://localhost:5173
 
-**[https://v0.app/chat/rGjwYTnEiok](https://v0.app/chat/rGjwYTnEiok)**
+🧮 Example Question Object
+{
+  "id": 1,
+  "question": "Which programming language is primarily used for web development?",
+  "options": ["Python", "Java", "PHP", "JavaScript"],
+  "answer": "JavaScript"
+}
 
-## How It Works
+##🌍 Deployment
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+Easily deploy your Somoo app to Vercel or Netlify in a few clicks:
+Push your code to GitHub.
+Connect the repo to Vercel or Netlify.
+Build command: npm run build
+Output directory: dist
+
+Live Demo Example: https://somoo.vercel.app
+
+🧑‍💻 Future Enhancements
+
+Add category and difficulty filters
+
+Integrate with Open Trivia API for dynamic questions
+
+Add sound effects and animations
+
+Implement a leaderboard with Firebase
+
+🪪 License
+
+This project is open-source and available under the MIT License
