@@ -116,11 +116,8 @@ export default function QuizStart({ onStart }: QuizStartProps) {
                 You have a saved quiz in progress. Pick up where you left off!
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button onClick={handleContinueQuiz} className="flex-1" size="lg">
+                <Button onClick={handleContinueQuiz} className="flex-1 py-3" size="lg">
                   Continue Quiz
-                </Button>
-                <Button onClick={handleStartNewQuiz} variant="outline" className="flex-1 bg-transparent" size="lg">
-                  Start New
                 </Button>
               </div>
             </div>
