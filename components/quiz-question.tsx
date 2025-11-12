@@ -29,31 +29,19 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     saveQuizState,
     resetQuiz,
   } = useQuiz()
-  const [timeLeft, setTimeLeft] = useState(timeRemaining > 0 ? timeRemaining : 30)
+  const [timeLeft, setTimeLeft] = useState(timeRemaining)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [isAnswered, setIsAnswered] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showHomeConfirm, setShowHomeConfirm] = useState(false)
 
-  const [hasQuestions, setHasQuestions] = useState(true)
-
   useEffect(() => {
-    setHasQuestions(questions.length > 0 && currentQuestion && currentQuestion.options)
-  }, [questions, currentQuestion])
-
-  useEffect(() => {
-    setTimeLeft(timeRemaining > 0 ? timeRemaining : 30)
+    setTimeLeft(30)
     setSelectedAnswer(null)
     setIsAnswered(false)
     setShowFeedback(false)
-  }, [currentQuestionIndex, timeRemaining])
-
-  useEffect(() => {
-    if (isPaused || isAnswered) {
-      setTimeRemaining(timeLeft)
-    }
-  }, [isPaused, isAnswered, timeLeft, setTimeRemaining])
+  }, [currentQuestionIndex])
 
   useEffect(() => {
     if (isPaused || isAnswered) return
@@ -64,7 +52,9 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
           handleTimeUp()
           return 0
         }
-        return prev - 1
+        const newTime = prev - 1
+        setTimeRemaining(newTime)
+        return newTime
       })
     }, 1000)
 
@@ -111,7 +101,6 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     if (isPaused) {
       resumeQuiz()
     } else {
-      setTimeRemaining(timeLeft)
       pauseQuiz()
       saveQuizState()
     }
@@ -166,11 +155,7 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
   }
 
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
-  const isCorrect = selectedAnswer !== null && selectedAnswer === currentQuestion.correctAnswer
-
-  if (!hasQuestions) {
-    return null
-  }
+  const isCorrect = selectedAnswer === currentQuestion.correctAnswer
 
   return (
     <>
@@ -260,7 +245,7 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
               const isSelected = selectedAnswer === index
               const isCorrectAnswer = index === currentQuestion.correctAnswer
               const showAsCorrect = showFeedback && isCorrectAnswer
-              const showAsIncorrect = showFeedback && isSelected && !isCorrectAnswer
+              const showAsIncorrect = showFeedback && isSelected && !isCorrect
 
               return (
                 <Button

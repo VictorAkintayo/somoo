@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { Question, QuizType, DifficultyLevel } from "@/lib/quiz-data"
 import { getQuestionsByTypeAndLevel } from "@/lib/quiz-data"
 
@@ -77,7 +77,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const pauseQuiz = () => setIsPaused(true)
   const resumeQuiz = () => setIsPaused(false)
 
-  const saveQuizState = useCallback(() => {
+  const saveQuizState = () => {
     if (typeof window !== "undefined") {
       const state = {
         questions,
@@ -90,9 +90,9 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       }
       localStorage.setItem("somoo_quiz_state", JSON.stringify(state))
     }
-  }, [questions, currentQuestionIndex, score, quizType, difficultyLevel, timeRemaining])
+  }
 
-  const loadQuizState = useCallback(() => {
+  const loadQuizState = () => {
     if (typeof window !== "undefined") {
       const savedState = localStorage.getItem("somoo_quiz_state")
       if (savedState) {
@@ -112,7 +112,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       }
     }
     return false
-  }, [])
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
