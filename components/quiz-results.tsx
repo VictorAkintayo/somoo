@@ -17,14 +17,19 @@ interface QuizResultsProps {
 
 export default function QuizResults({ onRestart }: QuizResultsProps) {
   const { score, questions, resetQuiz, quizType, difficultyLevel, answerHistory } = useQuiz()
+<<<<<<< HEAD
   // Safely calculate percentage, handling edge cases
   const rawPercentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0
   // Ensure percentage is a valid number
   const percentage = isNaN(rawPercentage) || !isFinite(rawPercentage) ? 0 : rawPercentage
+=======
+  const percentage = Math.round((score / questions.length) * 100)
+>>>>>>> 188e79c63c25c2fc0a49fcc55747da9459300c5e
   const [showConfetti, setShowConfetti] = useState(false)
   const [achievements, setAchievements] = useState<Array<{ type: any; title: string; description: string }>>([])
   const [showReview, setShowReview] = useState(false)
 
+<<<<<<< HEAD
   const getPerformanceFeedback = () => {
     if (percentage === 100) {
       return {
@@ -61,6 +66,8 @@ export default function QuizResults({ onRestart }: QuizResultsProps) {
 
   const feedback = getPerformanceFeedback()
 
+=======
+>>>>>>> 188e79c63c25c2fc0a49fcc55747da9459300c5e
   useEffect(() => {
     if (percentage >= 80) {
       setShowConfetti(true)
@@ -114,19 +121,35 @@ export default function QuizResults({ onRestart }: QuizResultsProps) {
             </div>
           </div>
           <div className="space-y-2 animate-in slide-in-from-top-2 delay-200">
+<<<<<<< HEAD
             <CardTitle className="text-5xl font-bold">{feedback.emoji}</CardTitle>
             <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">
               {feedback.title}
             </CardTitle>
             <CardDescription className="text-lg">{feedback.message}</CardDescription>
+=======
+            <CardTitle className="text-5xl font-bold">{percentage === 100 ? "🏆" : "🌟"}</CardTitle>
+            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">
+              {percentage === 100 ? "Perfect Score!" : "Excellent!"}
+            </CardTitle>
+            <CardDescription className="text-lg">
+              {percentage === 100
+                ? "Outstanding! You aced every question!"
+                : "Amazing performance! You really know your stuff!"}
+            </CardDescription>
+>>>>>>> 188e79c63c25c2fc0a49fcc55747da9459300c5e
             {quizType && difficultyLevel && (
               <div className="flex items-center justify-center gap-2 pt-2">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold">
                   {quizType}
                 </span>
+<<<<<<< HEAD
                 <span
                   className={`px-3 py-1 bg-secondary rounded-full text-sm font-semibold ${getDifficultyColor(difficultyLevel)}`}
                 >
+=======
+                <span className={`px-3 py-1 bg-secondary rounded-full text-sm font-semibold ${getDifficultyColor()}`}>
+>>>>>>> 188e79c63c25c2fc0a49fcc55747da9459300c5e
                   {difficultyLevel}
                 </span>
               </div>
