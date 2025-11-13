@@ -20,9 +20,14 @@ import {
   Sparkles,
   ArrowRight,
   PlayCircle,
+  Brain,
+  Medal,
+  Music2,
+  Laugh,
 } from "lucide-react"
 import type { QuizType, DifficultyLevel } from "@/lib/quiz-data"
 import { useQuiz } from "@/hooks/use-quiz"
+import { getTranslations, type Language } from "@/lib/translations"
 
 interface QuizStartProps {
   onStart: () => void
@@ -38,6 +43,9 @@ const QUIZ_TYPES: Array<{ value: QuizType; label: string; icon: React.ReactNode 
   { value: "Science", label: "Science", icon: <Beaker className="w-4 h-4 md:w-5 md:h-5" /> },
   { value: "History", label: "History", icon: <Clock className="w-4 h-4 md:w-5 md:h-5" /> },
   { value: "Politics", label: "Politics", icon: <Landmark className="w-4 h-4 md:w-5 md:h-5" /> },
+  { value: "Music", label: "Music", icon: <Music2 className="w-4 h-4 md:w-5 md:h-5" /> },
+  { value: "Sports", label: "Sports", icon: <Trophy className="w-4 h-4 md:w-5 md:h-5" /> },
+  { value: "Fun", label: "Fun", icon: <Laugh className="w-4 h-4 md:w-5 md:h-5" /> },
 ]
 
 const DIFFICULTY_LEVELS: Array<{ value: DifficultyLevel; label: string; color: string }> = [
@@ -54,7 +62,11 @@ export default function QuizStart({ onStart }: QuizStartProps) {
   const [step, setStep] = useState<"welcome" | "features" | "selection">("welcome")
   const [selectedType, setSelectedType] = useState<QuizType | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | null>(null)
+  const [isPracticeMode, setIsPracticeMode] = useState(false)
   const [hasSavedQuiz, setHasSavedQuiz] = useState(false)
+  const [highScores, setHighScores] = useState<Record<string, number>>({})
+  const [currentLang, setCurrentLang] = useState<Language>("en")
+  const t = getTranslations(currentLang)
   const { startQuiz, loadQuizState, resetQuiz, quizType, difficultyLevel, currentQuestionIndex, questions } = useQuiz()
 
   useEffect(() => {
@@ -63,12 +75,27 @@ export default function QuizStart({ onStart }: QuizStartProps) {
       if (savedState) {
         setHasSavedQuiz(true)
       }
+
+      const savedHighScores = localStorage.getItem("somoo_high_scores")
+      if (savedHighScores) {
+        setHighScores(JSON.parse(savedHighScores))
+      }
     }
+  }, [])
+
+  useEffect(() => {
+    const handleLanguageChange = (e: Event) => {
+      const customEvent = e as CustomEvent<Language>
+      setCurrentLang(customEvent.detail)
+    }
+
+    document.addEventListener("languageChange", handleLanguageChange)
+    return () => document.removeEventListener("languageChange", handleLanguageChange)
   }, [])
 
   const handleStartQuiz = () => {
     if (selectedType && selectedDifficulty) {
-      startQuiz(selectedType, selectedDifficulty)
+      startQuiz(selectedType, selectedDifficulty, isPracticeMode)
       onStart()
     }
   }
@@ -97,10 +124,11 @@ export default function QuizStart({ onStart }: QuizStartProps) {
             </div>
           </div>
           <CardTitle className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-primary via-chart-1 to-chart-2 bg-clip-text text-transparent text-balance">
-            Welcome to SoMoo
+            {t.welcome}
           </CardTitle>
           <CardDescription className="text-base md:text-lg text-muted-foreground max-w-md mx-auto text-pretty">
-            <span className="font-semibold text-foreground">Ṣé o mọ̀?</span> — Do you know it?
+            <span className="font-semibold text-foreground">{t.appTagline.split("—")[0]}</span>
+            {t.appTagline.includes("—") && ` — ${t.appTagline.split("—")[1]}`}
             <br />
             Test your knowledge across multiple categories and challenge yourself!
           </CardDescription>
@@ -149,31 +177,31 @@ export default function QuizStart({ onStart }: QuizStartProps) {
               </div>
             </div>
           </div>
-          <CardTitle className="text-xl md:text-3xl font-bold text-balance">What Makes SoMoo Special?</CardTitle>
+          <CardTitle className="text-xl md:text-3xl font-bold text-balance">{t.featuresTitle}</CardTitle>
           <CardDescription className="text-sm md:text-base text-muted-foreground px-2">
-            Experience the most engaging way to test your knowledge
+            {t.featuresDescription}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 md:space-y-8 pb-8 md:pb-12 px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <FeatureCard
               icon={<Timer className="w-6 h-6 md:w-8 md:h-8" />}
-              title="Timed Questions"
-              description="30 seconds per question to keep you focused and engaged"
+              title={t.timedQuestionsTitle}
+              description={t.timedQuestionsDescription}
               color="text-blue-500"
               delay="delay-100"
             />
             <FeatureCard
               icon={<Trophy className="w-6 h-6 md:w-8 md:h-8" />}
-              title="Score Tracking"
-              description="Real-time progress monitoring and performance analytics"
+              title={t.scoreTrackingTitle}
+              description={t.scoreTrackingDescription}
               color="text-yellow-500"
               delay="delay-200"
             />
             <FeatureCard
               icon={<Zap className="w-6 h-6 md:w-8 md:h-8" />}
-              title="Instant Feedback"
-              description="Get immediate results with detailed explanations"
+              title={t.instantFeedbackTitle}
+              description={t.instantFeedbackDescription}
               color="text-purple-500"
               delay="delay-300"
             />
@@ -185,7 +213,7 @@ export default function QuizStart({ onStart }: QuizStartProps) {
               size="lg"
               className="text-base md:text-lg h-12 md:h-14 px-8 md:px-12 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.05] animate-in fade-in slide-in-from-bottom-4 delay-400 group"
             >
-              Continue
+              {t.continueButton}
               <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -204,41 +232,54 @@ export default function QuizStart({ onStart }: QuizStartProps) {
             </div>
           </div>
         </div>
-        <CardTitle className="text-xl md:text-3xl font-bold text-balance">Customize Your Quiz</CardTitle>
+        <CardTitle className="text-xl md:text-3xl font-bold text-balance">{t.customizeQuizTitle}</CardTitle>
         <CardDescription className="text-sm md:text-base text-muted-foreground px-2">
-          Choose your category and difficulty level to begin
+          {t.customizeQuizDescription}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 md:space-y-8 px-4 md:px-6">
         <div className="space-y-3 md:space-y-4 animate-in fade-in slide-in-from-bottom-2 delay-100">
           <h3 className="text-base md:text-lg font-semibold text-center flex items-center justify-center gap-2">
             <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-            Select Quiz Category
+            {t.selectQuizCategoryTitle}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-            {QUIZ_TYPES.map((type) => (
-              <button
-                key={type.value}
-                onClick={() => setSelectedType(type.value)}
-                className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-lg border-2 transition-all duration-300 hover:scale-[1.02] ${
-                  selectedType === type.value
-                    ? "border-primary bg-primary/10 shadow-md"
-                    : "border-border bg-secondary/50 hover:border-primary/50"
-                }`}
-              >
-                <div className={selectedType === type.value ? "text-primary" : "text-muted-foreground"}>
-                  {type.icon}
-                </div>
-                <span className="font-medium text-xs md:text-sm">{type.label}</span>
-              </button>
-            ))}
+            {QUIZ_TYPES.map((type) => {
+              const highScoreKey = `${type.value}-${selectedDifficulty}`
+              const hasHighScore = highScores[highScoreKey] !== undefined
+
+              return (
+                <button
+                  key={type.value}
+                  onClick={() => setSelectedType(type.value)}
+                  className={`flex flex-col items-center gap-2 p-3 md:p-4 rounded-lg border-2 transition-all duration-300 hover:scale-[1.02] relative ${
+                    selectedType === type.value
+                      ? "border-primary bg-primary/10 shadow-md"
+                      : "border-border bg-secondary/50 hover:border-primary/50"
+                  }`}
+                >
+                  {hasHighScore && (
+                    <div className="absolute -top-2 -right-2 bg-yellow-500 text-white rounded-full p-1">
+                      <Medal className="w-3 h-3" />
+                    </div>
+                  )}
+                  <div className={selectedType === type.value ? "text-primary" : "text-muted-foreground"}>
+                    {type.icon}
+                  </div>
+                  <span className="font-medium text-xs md:text-sm text-center">{type.label}</span>
+                  {hasHighScore && selectedDifficulty && (
+                    <span className="text-[10px] text-yellow-600 font-semibold">Best: {highScores[highScoreKey]}%</span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
 
         <div className="space-y-3 md:space-y-4 animate-in fade-in slide-in-from-bottom-2 delay-200">
           <h3 className="text-base md:text-lg font-semibold text-center flex items-center justify-center gap-2">
             <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-            Select Difficulty Level
+            {t.selectDifficultyLevelTitle}
           </h3>
           <div className="grid grid-cols-3 gap-2 md:gap-3">
             {DIFFICULTY_LEVELS.map((level) => (
@@ -255,17 +296,41 @@ export default function QuizStart({ onStart }: QuizStartProps) {
           </div>
         </div>
 
+        <div className="flex items-center justify-center gap-3 p-4 bg-secondary/30 rounded-lg border-2 border-border/50 animate-in fade-in slide-in-from-bottom-2 delay-250">
+          <Brain className="w-5 h-5 text-primary" />
+          <div className="flex-1">
+            <p className="font-semibold text-sm">{t.practiceModeTitle}</p>
+            <p className="text-xs text-muted-foreground">{t.practiceModeDescription}</p>
+          </div>
+          <button
+            onClick={() => setIsPracticeMode(!isPracticeMode)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              isPracticeMode ? "bg-primary" : "bg-muted"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                isPracticeMode ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
         <Button
           onClick={handleStartQuiz}
           size="lg"
           disabled={!selectedType || !selectedDifficulty}
           className="w-full text-base md:text-lg h-12 md:h-14 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] animate-in fade-in slide-in-from-bottom-2 delay-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {!selectedType || !selectedDifficulty ? "Select Category & Difficulty" : "Start Quiz"}
+          {!selectedType || !selectedDifficulty
+            ? t.selectCategoryDifficultyButton
+            : isPracticeMode
+              ? t.startPracticeModeButton
+              : t.startQuizButton}
         </Button>
 
         <p className="text-center text-xs md:text-sm text-muted-foreground animate-in fade-in delay-400">
-          Up to 10 questions • Multiple choice • Good luck!
+          {t.upToQuestions} • {t.multipleChoice} • {t.goodLuck}
         </p>
       </CardContent>
     </Card>
@@ -286,8 +351,8 @@ function FeatureCard({ icon, title, description, color, delay }: FeatureCardProp
       className={`bg-secondary/50 p-4 md:p-6 rounded-xl border-2 border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-in fade-in zoom-in ${delay}`}
     >
       <div className={`${color} mb-2 md:mb-3`}>{icon}</div>
-      <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2">{title}</h3>
-      <p className="text-xs md:text-sm text-muted-foreground text-pretty">{description}</p>
+      <h3 className="font-semibold text-base md:text-lg mb-1 md:mb-2 text-foreground">{title}</h3>
+      <p className="text-xs md:text-sm text-foreground/70 text-pretty">{description}</p>
     </div>
   )
 }

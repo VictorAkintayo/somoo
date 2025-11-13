@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useQuiz } from "@/hooks/use-quiz"
-import { Clock, CheckCircle2, XCircle, Pause, Play, Home, RotateCcw } from "lucide-react"
+import { Clock, CheckCircle2, XCircle, Pause, Play, Home, RotateCcw, Lightbulb, Info, Infinity } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface QuizQuestionProps {
@@ -28,6 +28,11 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     setTimeRemaining,
     saveQuizState,
     resetQuiz,
+    hintsUsed,
+    applyHint,
+    eliminatedOptions,
+    isPracticeMode,
+    recordAnswer,
   } = useQuiz()
   const [timeLeft, setTimeLeft] = useState(timeRemaining)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
@@ -35,45 +40,38 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
   const [showFeedback, setShowFeedback] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showHomeConfirm, setShowHomeConfirm] = useState(false)
+  const [startTime, setStartTime] = useState(Date.now())
 
-  useEffect(() => {
-    setTimeLeft(30)
-    setSelectedAnswer(null)
-    setIsAnswered(false)
-    setShowFeedback(false)
-  }, [currentQuestionIndex])
+  const isSoundEnabled = () => {
+    if (typeof window === "undefined") return true
+    return localStorage.getItem("somoo_sound_enabled") !== "false"
+  }
 
-  useEffect(() => {
-    if (isPaused || isAnswered) return
+  const handleHome = () => {
+    setShowHomeConfirm(true)
+  }
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleTimeUp()
-          return 0
-        }
-        const newTime = prev - 1
-        setTimeRemaining(newTime)
-        return newTime
-      })
-    }, 1000)
+  const handleReset = () => {
+    setShowResetConfirm(true)
+  }
 
-    return () => clearInterval(timer)
-  }, [currentQuestionIndex, isPaused, isAnswered])
+  const confirmReset = () => {
+    resetQuiz()
+    onReturnHome()
+  }
 
-  const handleTimeUp = () => {
-    if (!isAnswered) {
-      setIsAnswered(true)
-      setShowFeedback(true)
-      playSound("timeout")
-      setTimeout(() => {
-        handleNext()
-      }, 2000)
+  const confirmHome = (save: boolean) => {
+    if (save) {
+      saveQuizState()
     }
+    onReturnHome()
   }
 
   const handleAnswerSelect = (index: number) => {
     if (isAnswered) return
+
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000)
+    recordAnswer(index, timeTaken)
 
     setSelectedAnswer(index)
     setIsAnswered(true)
@@ -81,7 +79,7 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     setShowFeedback(true)
 
     const isCorrect = index === currentQuestion.correctAnswer
-    playSound(isCorrect ? "correct" : "incorrect")
+    if (isSoundEnabled()) playSound(isCorrect ? "correct" : "incorrect")
 
     setTimeout(() => {
       handleNext()
@@ -106,26 +104,9 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     }
   }
 
-  const handleReset = () => {
-    setShowResetConfirm(true)
-  }
-
-  const confirmReset = () => {
-    resetQuiz()
-    onReturnHome()
-  }
-
-  const handleHome = () => {
-    setShowHomeConfirm(true)
-  }
-
-  const confirmHome = (save: boolean) => {
-    if (save) {
-      saveQuizState()
-    } else {
-      resetQuiz()
-    }
-    onReturnHome()
+  const handleHint = () => {
+    if (isAnswered || hintsUsed >= 3 || eliminatedOptions.length > 0) return
+    applyHint()
   }
 
   const playSound = (type: "correct" | "incorrect" | "timeout") => {
@@ -137,9 +118,9 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     gainNode.connect(audioContext.destination)
 
     if (type === "correct") {
-      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime) // C5
-      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1) // E5
-      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2) // G5
+      oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime)
+      oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1)
+      oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2)
     } else if (type === "incorrect") {
       oscillator.frequency.setValueAtTime(200, audioContext.currentTime)
       oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.1)
@@ -153,6 +134,70 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     oscillator.start(audioContext.currentTime)
     oscillator.stop(audioContext.currentTime + 0.3)
   }
+
+  const handleTimeUp = () => {
+    if (!isAnswered) {
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000)
+      recordAnswer(null, timeTaken)
+      setIsAnswered(true)
+      setShowFeedback(true)
+      if (isSoundEnabled()) playSound("timeout")
+      setTimeout(() => {
+        handleNext()
+      }, 2000)
+    }
+  }
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (isAnswered || isPaused) return
+
+      if (event.key >= "1" && event.key <= "4") {
+        const index = Number.parseInt(event.key) - 1
+        if (index < currentQuestion.options.length) {
+          handleAnswerSelect(index)
+        }
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault()
+        handlePauseToggle()
+      }
+
+      if (event.key === "h" || event.key === "H") {
+        handleHint()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyPress)
+    return () => window.removeEventListener("keydown", handleKeyPress)
+  }, [isAnswered, isPaused, currentQuestion])
+
+  useEffect(() => {
+    setTimeLeft(isPracticeMode ? 999 : 30)
+    setSelectedAnswer(null)
+    setIsAnswered(false)
+    setShowFeedback(false)
+    setStartTime(Date.now())
+  }, [currentQuestionIndex, isPracticeMode])
+
+  useEffect(() => {
+    if (isPaused || isAnswered || isPracticeMode) return
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleTimeUp()
+          return 0
+        }
+        const newTime = prev - 1
+        setTimeRemaining(newTime)
+        return newTime
+      })
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [currentQuestionIndex, isPaused, isAnswered, isPracticeMode])
 
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
   const isCorrect = selectedAnswer === currentQuestion.correctAnswer
@@ -171,25 +216,37 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
                 <RotateCcw className="w-4 h-4 mr-1" />
                 Reset
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleHint}
+                disabled={isAnswered || hintsUsed >= 3 || eliminatedOptions.length > 0}
+                className="relative"
+              >
+                <Lightbulb className="w-4 h-4 mr-1" />
+                Hint ({3 - hintsUsed})
+              </Button>
             </div>
-            <Button
-              variant={isPaused ? "default" : "outline"}
-              size="sm"
-              onClick={handlePauseToggle}
-              disabled={isAnswered}
-            >
-              {isPaused ? (
-                <>
-                  <Play className="w-4 h-4 mr-1" />
-                  Resume
-                </>
-              ) : (
-                <>
-                  <Pause className="w-4 h-4 mr-1" />
-                  Pause
-                </>
-              )}
-            </Button>
+            {!isPracticeMode && (
+              <Button
+                variant={isPaused ? "default" : "outline"}
+                size="sm"
+                onClick={handlePauseToggle}
+                disabled={isAnswered}
+              >
+                {isPaused ? (
+                  <>
+                    <Play className="w-4 h-4 mr-1" />
+                    Resume
+                  </>
+                ) : (
+                  <>
+                    <Pause className="w-4 h-4 mr-1" />
+                    Pause
+                  </>
+                )}
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
@@ -197,22 +254,36 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
               <span className="text-sm font-medium text-muted-foreground">
                 Question {currentQuestionIndex + 1} of {questions.length}
               </span>
+              {isPracticeMode && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">
+                  Practice
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Clock
-                className={cn(
-                  "w-5 h-5 transition-colors",
-                  timeLeft <= 5 ? "text-destructive animate-pulse" : "text-muted-foreground",
-                )}
-              />
-              <span
-                className={cn(
-                  "text-lg font-bold tabular-nums transition-colors",
-                  timeLeft <= 5 ? "text-destructive" : "text-foreground",
-                )}
-              >
-                {timeLeft}s
-              </span>
+              {isPracticeMode ? (
+                <>
+                  <Infinity className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-lg font-bold text-muted-foreground">No Limit</span>
+                </>
+              ) : (
+                <>
+                  <Clock
+                    className={cn(
+                      "w-5 h-5 transition-colors",
+                      timeLeft <= 5 ? "text-destructive animate-pulse" : "text-muted-foreground",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "text-lg font-bold tabular-nums transition-colors",
+                      timeLeft <= 5 ? "text-destructive" : "text-foreground",
+                    )}
+                  >
+                    {timeLeft}s
+                  </span>
+                </>
+              )}
             </div>
           </div>
           <Progress value={progress} className="h-2" />
@@ -246,6 +317,7 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
               const isCorrectAnswer = index === currentQuestion.correctAnswer
               const showAsCorrect = showFeedback && isCorrectAnswer
               const showAsIncorrect = showFeedback && isSelected && !isCorrect
+              const isEliminated = eliminatedOptions.includes(index)
 
               return (
                 <Button
@@ -257,10 +329,11 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
                     showAsCorrect && "bg-green-500/10 border-green-500 hover:bg-green-500/20",
                     showAsIncorrect && "bg-destructive/10 border-destructive hover:bg-destructive/20",
                     isAnswered && !isSelected && !isCorrectAnswer && "opacity-50",
+                    isEliminated && "opacity-30 line-through",
                   )}
                   style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => handleAnswerSelect(index)}
-                  disabled={isAnswered}
+                  disabled={isAnswered || isEliminated}
                 >
                   <span className="flex-1 break-words">{option}</span>
                   {showAsCorrect && (
@@ -277,22 +350,36 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
           {showFeedback && (
             <div
               className={cn(
-                "p-4 rounded-lg border-2 animate-in slide-in-from-bottom-2 duration-500",
+                "p-4 rounded-lg border-2 animate-in slide-in-from-bottom-2 duration-500 space-y-2",
                 isCorrect
                   ? "bg-green-500/10 border-green-500 text-green-700 dark:text-green-400"
                   : "bg-destructive/10 border-destructive text-destructive",
               )}
             >
-              <p className="font-semibold">
-                {isCorrect ? "🎉 Correct!" : selectedAnswer === null ? "⏱️ Time's up!" : "❌ Incorrect!"}
-              </p>
-              <p className="text-sm mt-1 opacity-90">
-                {isCorrect
-                  ? "Great job! Moving to the next question..."
-                  : `The correct answer was: ${currentQuestion.options[currentQuestion.correctAnswer]}`}
-              </p>
+              <div className="flex items-start gap-2">
+                <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold">
+                    {isCorrect ? "Correct!" : selectedAnswer === null ? "Time's up!" : "Incorrect!"}
+                  </p>
+                  {!isCorrect && (
+                    <p className="text-sm mt-1 opacity-90">
+                      The correct answer was: {currentQuestion.options[currentQuestion.correctAnswer]}
+                    </p>
+                  )}
+                  {currentQuestion.explanation && (
+                    <p className="text-sm mt-2 opacity-80 border-t border-current pt-2">
+                      {currentQuestion.explanation}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
+
+          <div className="text-xs text-muted-foreground text-center pt-2">
+            Keyboard: 1-4 (answers) • Space (pause) • H (hint)
+          </div>
         </CardContent>
       </Card>
 

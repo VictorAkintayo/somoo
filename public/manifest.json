@@ -1,0 +1,39 @@
+{
+  "name": "SoMoo - Interactive Quiz Platform",
+  "short_name": "SoMoo",
+  "description": "Ṣé o mọ̀? Test your knowledge across multiple categories with SoMoo, featuring timed questions, score tracking, and instant feedback.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "games"],
+  "shortcuts": [
+    {
+      "name": "Start Quiz",
+      "short_name": "Quiz",
+      "description": "Start a new quiz",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

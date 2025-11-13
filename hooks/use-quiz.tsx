@@ -4,6 +4,14 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import type { Question, QuizType, DifficultyLevel } from "@/lib/quiz-data"
 import { getQuestionsByTypeAndLevel } from "@/lib/quiz-data"
 
+interface AnswerHistory {
+  questionIndex: number
+  question: Question
+  selectedAnswer: number | null
+  isCorrect: boolean
+  timeTaken: number
+}
+
 interface QuizContextType {
   questions: Question[]
   currentQuestionIndex: number
@@ -16,12 +24,18 @@ interface QuizContextType {
   selectAnswer: (answerIndex: number) => void
   nextQuestion: () => void
   resetQuiz: () => void
-  startQuiz: (type: QuizType, level: DifficultyLevel) => void
+  startQuiz: (type: QuizType, level: DifficultyLevel, practiceMode?: boolean) => void
   pauseQuiz: () => void
   resumeQuiz: () => void
   setTimeRemaining: (time: number) => void
   saveQuizState: () => void
   loadQuizState: () => boolean
+  hintsUsed: number
+  applyHint: () => void
+  eliminatedOptions: number[]
+  isPracticeMode: boolean
+  answerHistory: AnswerHistory[]
+  recordAnswer: (selectedAnswer: number | null, timeTaken: number) => void
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined)
@@ -34,10 +48,14 @@ export function QuizProvider({ children }: { children: ReactNode }) {
   const [difficultyLevel, setDifficultyLevel] = useState<DifficultyLevel | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(30)
+  const [hintsUsed, setHintsUsed] = useState(0)
+  const [eliminatedOptions, setEliminatedOptions] = useState<number[]>([])
+  const [isPracticeMode, setIsPracticeMode] = useState(false)
+  const [answerHistory, setAnswerHistory] = useState<AnswerHistory[]>([])
 
   const currentQuestion = questions[currentQuestionIndex] || ({} as Question)
 
-  const startQuiz = (type: QuizType, level: DifficultyLevel) => {
+  const startQuiz = (type: QuizType, level: DifficultyLevel, practiceMode = false) => {
     const selectedQuestions = getQuestionsByTypeAndLevel(type, level)
     setQuestions(selectedQuestions)
     setQuizType(type)
@@ -45,7 +63,11 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     setCurrentQuestionIndex(0)
     setScore(0)
     setIsPaused(false)
-    setTimeRemaining(30)
+    setTimeRemaining(practiceMode ? 999 : 30)
+    setHintsUsed(0)
+    setEliminatedOptions([])
+    setIsPracticeMode(practiceMode)
+    setAnswerHistory([])
   }
 
   const selectAnswer = (answerIndex: number) => {
@@ -54,10 +76,37 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const recordAnswer = (selectedAnswer: number | null, timeTaken: number) => {
+    const isCorrect = selectedAnswer === currentQuestion.correctAnswer
+    const record: AnswerHistory = {
+      questionIndex: currentQuestionIndex,
+      question: currentQuestion,
+      selectedAnswer,
+      isCorrect,
+      timeTaken,
+    }
+    setAnswerHistory((prev) => [...prev, record])
+  }
+
   const nextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1)
-      setTimeRemaining(30)
+      setTimeRemaining(isPracticeMode ? 999 : 30)
+      setEliminatedOptions([])
+    }
+  }
+
+  const applyHint = () => {
+    if (hintsUsed >= 3 || eliminatedOptions.length > 0) return
+
+    const wrongOptions = currentQuestion.options
+      .map((_, index) => index)
+      .filter((index) => index !== currentQuestion.correctAnswer)
+
+    if (wrongOptions.length > 0) {
+      const randomWrongOption = wrongOptions[Math.floor(Math.random() * wrongOptions.length)]
+      setEliminatedOptions([randomWrongOption])
+      setHintsUsed((prev) => prev + 1)
     }
   }
 
@@ -69,6 +118,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     setDifficultyLevel(null)
     setIsPaused(false)
     setTimeRemaining(30)
+    setHintsUsed(0)
+    setEliminatedOptions([])
+    setIsPracticeMode(false)
+    setAnswerHistory([])
     if (typeof window !== "undefined") {
       localStorage.removeItem("somoo_quiz_state")
     }
@@ -86,6 +139,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         quizType,
         difficultyLevel,
         timeRemaining,
+        hintsUsed,
+        eliminatedOptions,
+        isPracticeMode,
+        answerHistory,
         timestamp: Date.now(),
       }
       localStorage.setItem("somoo_quiz_state", JSON.stringify(state))
@@ -104,6 +161,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
           setQuizType(state.quizType)
           setDifficultyLevel(state.difficultyLevel)
           setTimeRemaining(state.timeRemaining)
+          setHintsUsed(state.hintsUsed || 0)
+          setEliminatedOptions(state.eliminatedOptions || [])
+          setIsPracticeMode(state.isPracticeMode || false)
+          setAnswerHistory(state.answerHistory || [])
           return true
         } catch (error) {
           console.error("Failed to load quiz state:", error)
@@ -143,6 +204,12 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         setTimeRemaining,
         saveQuizState,
         loadQuizState,
+        hintsUsed,
+        applyHint,
+        eliminatedOptions,
+        isPracticeMode,
+        answerHistory,
+        recordAnswer,
       }}
     >
       {children}
