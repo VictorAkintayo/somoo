@@ -22,6 +22,8 @@ A sleek and interactive quiz web app built with React and TypeScript, designed t
 
 🛠️ Tech Stack
 
++++ Multi-language support
+
 Frontend: React 18, TypeScript, TailwindCSS
 State Management: Zustand or Context API
 Animations: Framer Motion
