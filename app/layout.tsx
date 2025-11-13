@@ -12,20 +12,12 @@ export const metadata: Metadata = {
   title: "SoMoo - Interactive Quiz Platform",
   description:
     "Ṣé o mọ̀? Do you know it? Test your knowledge with SoMoo, an engaging quiz platform featuring timed questions, score tracking, and instant feedback across multiple categories.",
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.jpg", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.jpg", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/apple-icon.jpg", sizes: "180x180", type: "image/png" }],
-    shortcut: "/icon.svg",
-  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "SoMoo",
+    author: "Victor Akintayo",
   },
     generator: 'v0.app'
 }
