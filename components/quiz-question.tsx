@@ -206,25 +206,38 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
     <>
       <Card className="w-full max-w-3xl shadow-2xl border-2 animate-in fade-in zoom-in duration-500 relative">
         <CardHeader className="space-y-4 pb-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleHome} disabled={isAnswered}>
-                <Home className="w-4 h-4 mr-1" />
-                Home
+          <div className="flex items-center justify-between gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleHome}
+                disabled={isAnswered}
+                className="px-2 sm:px-3 bg-transparent"
+              >
+                <Home className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Home</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={handleReset} disabled={isAnswered}>
-                <RotateCcw className="w-4 h-4 mr-1" />
-                Reset
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                disabled={isAnswered}
+                className="px-2 sm:px-3 bg-transparent"
+              >
+                <RotateCcw className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Reset</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleHint}
                 disabled={isAnswered || hintsUsed >= 3 || eliminatedOptions.length > 0}
-                className="relative"
+                className="relative px-2 sm:px-3"
               >
-                <Lightbulb className="w-4 h-4 mr-1" />
-                Hint ({3 - hintsUsed})
+                <Lightbulb className="w-4 h-4 sm:mr-1" />
+                <span className="hidden sm:inline">Hint ({3 - hintsUsed})</span>
+                <span className="sm:hidden text-xs">({3 - hintsUsed})</span>
               </Button>
             </div>
             {!isPracticeMode && (
@@ -233,50 +246,47 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
                 size="sm"
                 onClick={handlePauseToggle}
                 disabled={isAnswered}
+                className="px-2 sm:px-3"
               >
                 {isPaused ? (
                   <>
-                    <Play className="w-4 h-4 mr-1" />
-                    Resume
+                    <Play className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Resume</span>
                   </>
                 ) : (
                   <>
-                    <Pause className="w-4 h-4 mr-1" />
-                    Pause
+                    <Pause className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Pause</span>
                   </>
                 )}
               </Button>
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Question {currentQuestionIndex + 1} of {questions.length}
-              </span>
-              {isPracticeMode && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">
-                  Practice
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-muted-foreground">
+              Q {currentQuestionIndex + 1}/{questions.length}
+            </span>
+            {isPracticeMode && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">Practice</span>
+            )}
+            <div className="flex items-center gap-1 sm:gap-2">
               {isPracticeMode ? (
                 <>
-                  <Infinity className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-lg font-bold text-muted-foreground">No Limit</span>
+                  <Infinity className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
+                  <span className="text-sm sm:text-lg font-bold text-muted-foreground">∞</span>
                 </>
               ) : (
                 <>
                   <Clock
                     className={cn(
-                      "w-5 h-5 transition-colors",
+                      "w-4 h-4 sm:w-5 sm:h-5 transition-colors",
                       timeLeft <= 5 ? "text-destructive animate-pulse" : "text-muted-foreground",
                     )}
                   />
                   <span
                     className={cn(
-                      "text-lg font-bold tabular-nums transition-colors",
+                      "text-sm sm:text-lg font-bold tabular-nums transition-colors",
                       timeLeft <= 5 ? "text-destructive" : "text-foreground",
                     )}
                   >
@@ -287,9 +297,9 @@ export default function QuizQuestion({ onFinish, onReturnHome }: QuizQuestionPro
             </div>
           </div>
           <Progress value={progress} className="h-2" />
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">Score: {score}</span>
-            <span className="text-muted-foreground">{Math.round(progress)}% Complete</span>
+            <span className="text-muted-foreground">{Math.round(progress)}%</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

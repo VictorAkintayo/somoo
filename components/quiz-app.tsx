@@ -13,7 +13,7 @@ import LoadingSkeleton from "./loading-skeleton"
 export default function QuizApp() {
   return (
     <QuizProvider>
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50 flex items-center gap-1 sm:gap-2">
         <LanguageSelector />
         <SoundToggle />
         <ThemeToggle />

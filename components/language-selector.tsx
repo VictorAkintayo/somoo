@@ -40,10 +40,14 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5 h-9 px-2 sm:px-3 text-xs sm:text-sm bg-transparent">
-          <Languages className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="hidden xs:inline">{current?.flag}</span>
-          <span className="hidden sm:inline">{current?.name}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 w-8 sm:w-auto sm:h-9 p-0 sm:px-3 sm:gap-1.5 text-xs sm:text-sm bg-transparent"
+        >
+          <Languages className="w-4 h-4" />
+          <span className="hidden sm:inline">{current?.flag}</span>
+          <span className="hidden md:inline">{current?.name}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
