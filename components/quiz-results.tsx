@@ -17,7 +17,10 @@ interface QuizResultsProps {
 
 export default function QuizResults({ onRestart }: QuizResultsProps) {
   const { score, questions, resetQuiz, quizType, difficultyLevel, answerHistory } = useQuiz()
-  const percentage = Math.round((score / questions.length) * 100)
+  // Safely calculate percentage, handling edge cases
+  const rawPercentage = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0
+  // Ensure percentage is a valid number
+  const percentage = isNaN(rawPercentage) || !isFinite(rawPercentage) ? 0 : rawPercentage
   const [showConfetti, setShowConfetti] = useState(false)
   const [achievements, setAchievements] = useState<Array<{ type: any; title: string; description: string }>>([])
   const [showReview, setShowReview] = useState(false)
